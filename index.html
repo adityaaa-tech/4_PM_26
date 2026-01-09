@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day Predictor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    background: linear-gradient(135deg,#22d3ee,#ec4899);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+}
+
+/* CARD */
+.card{
+    width:90%;
+    max-width:380px;
+    padding:28px 22px;
+    border-radius:24px;
+    background:linear-gradient(180deg,#ffffff,#f1f5f9,#ffffff);
+    border:2px solid rgba(0,0,0,0.85);
+    box-shadow:0 20px 40px rgba(0,0,0,0.3);
+    text-align:center;
+    transition:all 0.6s ease;
+}
+
+.fade-out{
+    opacity:0;
+    transform:scale(0.94);
+}
+
+/* LOADER */
+.loader{
+    width:72px;
+    height:72px;
+    border-radius:50%;
+    border:6px solid #e5e7eb;
+    border-top:6px solid #22d3ee;
+    border-right:6px solid #ec4899;
+    border-bottom:6px solid #a855f7;
+    border-left:6px solid #22c55e;
+    animation:spin 1s linear infinite;
+    margin:0 auto 20px;
+    box-shadow:0 0 15px rgba(34,211,238,0.6);
+}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* LOADING */
+.loading-text{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:16px;
+}
+
+.cat{
+    display:inline-block;
+    margin-left:6px;
+    animation:runCat 1.2s linear infinite;
+}
+
+@keyframes runCat{
+    0%{transform:translateX(0)}
+    50%{transform:translateX(10px)}
+    100%{transform:translateX(0)}
+}
+
+/* PROGRESS */
+.progress-container{
+    width:100%;
+    height:10px;
+    background:#e5e7eb;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    background:linear-gradient(90deg,#22d3ee,#ec4899,#a855f7);
+    transition:width 0.6s ease;
+}
+
+/* INITIAL */
+.title{font-size:22px;font-weight:bold;margin-bottom:10px;}
+.tag{border:1px dashed #999;padding:6px 10px;border-radius:12px;font-size:12px;margin-bottom:20px;}
+.question{font-size:18px;margin-bottom:20px;}
+
+.days{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.day-btn{
+    padding:14px;
+    border-radius:14px;
+    border:2px solid #333;
+    background:white;
+    cursor:pointer;
+}
+
+.sunday{grid-column:span 2;}
+
+/* RESULT READY */
+.final-title{font-size:20px;font-weight:bold;margin-bottom:22px;}
+
+.result-box{
+    padding:18px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#22d3ee,#ec4899);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* FINAL RESULT */
+.right{
+    font-size:26px;
+    font-weight:900;
+    margin-bottom:10px;
+    background: linear-gradient(90deg, #22d3ee, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtext{
+    font-size:16px;
+    font-weight:800;
+    margin-bottom:18px;
+    background: linear-gradient(90deg, #facc15, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge{
+    display:inline-block;
+    background:#ef4444;
+    color:white;
+    padding:8px 16px;
+    border-radius:20px;
+    font-size:13px;
+    margin-bottom:18px;
+}
+
+.certified{
+    font-size:14px;
+    font-weight:600;
+    color:#374151;
+    margin-bottom:18px;
+}
+
+.iq-box{
+    background:#facc15;
+    padding:14px;
+    border-radius:14px;
+    font-weight:bold;
+    font-size:14px;
+    margin-bottom:22px;
+}
+
+.refresh{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:#3b82f6;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    margin:0 auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="card">
+    <div class="title">Day Predictor AI 🤖</div>
+    <div class="tag">Please kids stay away</div>
+    <div class="question">Tomorrow is which day?</div>
+
+    <div class="days">
+        <button class="day-btn">Monday</button>
+        <button class="day-btn">Tuesday</button>
+        <button class="day-btn">Wednesday</button>
+        <button class="day-btn">Thursday</button>
+        <button class="day-btn">Friday</button>
+        <button class="day-btn">Saturday</button>
+        <button class="day-btn sunday">Sunday</button>
+    </div>
+</div>
+
+<script>
+const card=document.getElementById("card");
+const buttons=document.querySelectorAll(".day-btn");
+
+const screens=[
+ {text:"bringing choco lava cake...",progress:25},
+ {text:"going for domino's pizza...",progress:50},
+ {text:"teddy brings smile...",progress:75},
+ {text:"Prediction almost ready...",progress:100}
+];
+
+function startFlow(){
+ let i=0;
+ function showLoading(){
+  card.classList.add("fade-out");
+  setTimeout(()=>{
+   card.innerHTML=`
+    <div class="loader"></div>
+    <div class="loading-text">${screens[i].text}<span class="cat">🐈</span></div>
+    <div class="progress-container">
+        <div class="progress-bar" style="width:${screens[i].progress}%"></div>
+    </div>
+   `;
+   card.classList.remove("fade-out");
+   i++;
+   if(i<screens.length){setTimeout(showLoading,3000);}
+   else{setTimeout(showReady,3000);}
+  },600);
+ }
+ showLoading();
+}
+
+function showReady(){
+ card.classList.add("fade-out");
+ setTimeout(()=>{
+  card.innerHTML=`
+   <div class="final-title">🎉 Result is Ready</div>
+   <div class="result-box" onclick="showResult()">Prediction Ready</div>
+  `;
+  card.classList.remove("fade-out");
+ },600);
+}
+
+function showResult(){
+ card.classList.add("fade-out");
+ setTimeout(()=>{
+  card.innerHTML=`
+   <div class="right">YOU’RE RIGHT!</div>
+   <div class="subtext">Yes, tomorrow is Yourday!</div>
+   <div class="badge">Certified Time Decoder</div>
+   <div class="certified">Certified from Ms. Ritika Lakdawala</div>
+   <div class="iq-box">Your IQ is higher than 99.9% of all humanity.</div>
+   <div class="refresh">⟳</div>
+  `;
+  card.classList.remove("fade-out");
+ },600);
+}
+
+buttons.forEach(b=>b.addEventListener("click",startFlow));
+</script>
+
+</body>
+</html>
